@@ -106,9 +106,9 @@ export default function EditableLabel({ labelKey }: Props) {
   };
 
   const handleSave = () => {
-    toast.success(`Label updated successfully`, {
-      description: `${label.usages.length} locations updated`,
-    });
+  toast.success(
+  `Label updated successfully • ${label.usages.length} locations updated`
+);
     updateLabel(labelKey, value);
     setOpen(false);
   };
