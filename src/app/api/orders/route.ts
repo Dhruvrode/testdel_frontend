@@ -49,14 +49,7 @@ export async function GET(req: Request) {
     }
 
     const backendResponse = await res.json();
-
-    /**
-     * Expected backend response:
-     * {
-     *   data: OrderDocument[],
-     *   total: number
-     * }
-     */
+ 
 
     return NextResponse.json({
       data: backendResponse.data,

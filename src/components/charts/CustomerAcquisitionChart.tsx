@@ -1,4 +1,3 @@
-// components/charts/CustomerAcquisitionChart.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,6 +5,8 @@ import ReactECharts from "echarts-for-react";
 import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import EditableLabel from "../../app/labels/EditableLabel";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 interface AcquisitionData {
   month: string;
@@ -14,14 +15,31 @@ interface AcquisitionData {
 
 export default function CustomerAcquisitionChart() {
   const [data, setData] = useState<AcquisitionData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
       const res = await fetch("/api/customers/acquisition");
+      
+      if (!res.ok) {
+        throw new Error("Failed to load acquisition data");
+      }
+      
       const json = await res.json();
       setData(json);
+    } catch (err) {
+      console.error("Failed to load customer acquisition:", err);
+      setError(err instanceof Error ? err.message : "Failed to load acquisition data");
+    } finally {
+      setLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const option = {
@@ -76,7 +94,11 @@ export default function CustomerAcquisitionChart() {
         <TrendingUp className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <ReactECharts option={option} style={{ height: 280 }} />
+        {loading && <LoadingState message="Loading acquisition data..." />}
+        {error && <ErrorState error={error} onRetry={loadData} />}
+        {!loading && !error && (
+          <ReactECharts option={option} style={{ height: 280 }} />
+        )}
       </CardContent>
     </Card>
   );

@@ -1,5 +1,3 @@
- 
-
 export interface Customer {
   customerId: string;
   name: string;
@@ -38,15 +36,22 @@ export async function getCustomers(params: {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to load customers");
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData.error || "Failed to load customers";
+    const details = errorData.details || "";
+    throw new Error(`${message}${details ? `: ${details}` : ""}`);
   }
 
   return res.json();
 }
 
-// lib/api/customers.ts (CREATE THIS FILE)
 export async function getCustomersSummary() {
   const res = await fetch("/api/customers/summary", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch customers summary");
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch customers summary");
+  }
+  
   return res.json();
 }

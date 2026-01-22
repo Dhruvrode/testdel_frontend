@@ -9,36 +9,44 @@ export type DashboardSummary = {
 };
 
 
-
 export async function getRevenueData(): Promise<RevenuePoint[]> {
   const res = await fetch("/api/dashboard/revenue", {
     cache: "no-store",
   });
 
   if (!res.ok) {
-    throw new Error("Failed to load revenue data");
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData.error || "Failed to load revenue data";
+    const details = errorData.details || "";
+    throw new Error(`${message}${details ? `: ${details}` : ""}`);
   }
 
   return res.json();
 }
 
-
 export async function getRegionRevenue(): Promise<RegionRevenue[]> {
   const res = await fetch("/api/dashboard/revenue-by-region");
-  if (!res.ok) throw new Error("Failed to fetch region revenue");
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch region revenue");
+  }
+  
   return res.json();
 }
-
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const res = await fetch("/api/dashboard/summary", {
-    cache: "no-store",  
+    cache: "no-store",
   });
-  if (!res.ok) throw new Error("Failed to fetch dashboard summary");
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch dashboard summary");
+  }
+  
   return res.json();
 }
-
-
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {

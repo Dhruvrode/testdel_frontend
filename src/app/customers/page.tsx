@@ -1,39 +1,53 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import CustomerAcquisitionChart from "@/components/charts/CustomerAcquisitionChart";
 import CustomerLTVChart from "@/components/charts/CustomerLTVChart";
 import Counters from "@/components/counters/Counters";
 import EditableLabel from "@/app/labels/EditableLabel";
 import CustomersTable from "@/components/tables/Customertable";
-import {
-  CreditCard,
-  DollarSign,
-  ShoppingCart,
-  TrendingUp,
-  UserPlus,
-  Users,
-} from "lucide-react";
- import { getRegionRevenue } from "@/lib/api/dashboard";
+import { DollarSign, TrendingUp, UserPlus, Users } from "lucide-react";
 import { getCustomersSummary } from "@/lib/api/customers";
-import { useEffect, useState } from "react";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { toast } from "react-toastify";
 
 export default function CustomersPage() {
-   const [summary, setSummary] = useState({
+  const [summary, setSummary] = useState({
     totalCustomers: 0,
     avgSpendPerCustomer: 0,
     newCustomersThisMonth: 0,
     growth: 0,
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const sum = await getCustomersSummary();
+      setSummary(sum);
+    } catch (err) {
+      console.error("Failed to load customers summary:", err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
+     } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function load() {
-      const [region, sum] = await Promise.all([
-        getRegionRevenue(),
-        getCustomersSummary(),
-      ]);
-       setSummary(sum);
-    }
-    load();
+    loadData();
   }, []);
+
+  if (loading) {
+    return <LoadingState message="Loading customers..." className="h-screen" />;
+  }
+
+  // if (error) {
+  //   return <ErrorState error={error} onRetry={loadData} className="h-screen" />;
+  // }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -46,6 +60,7 @@ export default function CustomersPage() {
         </p>
       </div>
 
+      {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Counters
           labelKey="total_customers_card"
@@ -70,37 +85,12 @@ export default function CustomersPage() {
 
         <Counters
           labelKey="growth_card"
-          value={`${summary.growth > 0 ? '+' : ''}${summary.growth.toFixed(1)}%`}
+          value={`${summary.growth > 0 ? "+" : ""}${summary.growth.toFixed(1)}%`}
           subtitle="Customer growth"
           icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
-      {/* <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Counters
-          labelKey="revenue_card"
-          value="$124,000"
-          subtitle="+12.4% from last month"
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-        />
 
-        <Counters
-          labelKey="orders_card"
-          value="1,284"
-          icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
-        />
-
-        <Counters
-          labelKey="avg_order_card"
-          value="$96.60"
-          icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
-        />
-
-        <Counters
-          labelKey="growth_card"
-          value="+12.4%"
-          icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
-        />
-      </div> */}
       {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2">
         <CustomerAcquisitionChart />

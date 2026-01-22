@@ -11,6 +11,7 @@ import {
   TrendingUp,
   ArrowLeft,
   Save,
+  ChevronLeft,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLabels } from "@/app/context/Labelcontext";
 import { toast } from "react-toastify";
+
 export default function EditLabelPage({
   params,
 }: {
@@ -32,8 +34,10 @@ export default function EditLabelPage({
   const [searchQuery, setSearchQuery] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [expandedPages, setExpandedPages] = useState<Set<string>>(new Set());
-  const [pageLimit, setPageLimit] = useState(20);
-  const ITEMS_PER_PAGE = 20;
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 2;
 
   const uniquePages = useMemo(
     () => (label ? new Set(label.usages.map((u) => u.page)) : new Set()),
@@ -45,6 +49,11 @@ export default function EditLabelPage({
       setValue(label.value);
     }
   }, [label]);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const topPages = useMemo(() => {
     if (!label) return [];
@@ -73,6 +82,12 @@ export default function EditLabelPage({
     return { filteredUsages: usages, filteredPages: pages };
   }, [label, searchQuery]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPages.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedPages = filteredPages.slice(startIndex, endIndex);
+
   if (!label) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -89,9 +104,9 @@ export default function EditLabelPage({
       setShowConfirm(true);
       return;
     }
-toast.success(
-  `Label updated successfully • ${label.usages.length} locations updated`
-);
+    toast.success(
+      `Label updated successfully • ${label.usages.length} locations updated`,
+    );
     updateLabel(labelKey, value);
     router.back();
   };
@@ -107,8 +122,6 @@ toast.success(
   };
 
   const isChanged = value.trim() && value !== label.value;
-  const visiblePages = filteredPages.slice(0, pageLimit);
-  const hasMorePages = filteredPages.length > pageLimit;
 
   return (
     <div className="min-h-screen bg-background">
@@ -192,8 +205,8 @@ toast.success(
                 </AlertTitle>
                 <AlertDescription className="text-red-800 dark:text-red-200 space-y-3">
                   <p>
-                    You're about to modify
-                    <strong>{label.usages.length.toLocaleString()}</strong>
+                    You're about to modify{" "}
+                    <strong>{label.usages.length.toLocaleString()}</strong>{" "}
                     locations. This action cannot be undone.
                   </p>
                   <div className="flex gap-2">
@@ -252,10 +265,13 @@ toast.success(
             <Card>
               <CardHeader>
                 <div className="space-y-4">
-                  <CardTitle className="text-lg">
-                    All Affected Locations (
-                    {label.usages.length.toLocaleString()})
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">
+                      All Affected Locations (
+                      {label.usages.length.toLocaleString()})
+                    </CardTitle>
+
+                  </div>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -267,7 +283,7 @@ toast.success(
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="border rounded-lg">
                   {filteredPages.length === 0 ? (
                     <div className="p-12 text-center text-sm text-muted-foreground">
@@ -275,7 +291,7 @@ toast.success(
                     </div>
                   ) : (
                     <>
-                      {visiblePages.map((page) => {
+                      {paginatedPages.map((page) => {
                         const pageUsages = filteredUsages.filter(
                           (u) => u.page === page,
                         );
@@ -314,24 +330,69 @@ toast.success(
                           </div>
                         );
                       })}
-
-                      {hasMorePages && (
-                        <div className="p-4 text-center border-t bg-muted/20">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setPageLimit(pageLimit + ITEMS_PER_PAGE)
-                            }
-                          >
-                            Load More ({filteredPages.length - pageLimit}{" "}
-                            remaining)
-                          </Button>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <div className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      
+                      {/* Page Numbers */}
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNum)}
+                              className="w-8 h-8 p-0"
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
