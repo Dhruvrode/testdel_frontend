@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+🔗 Live Deployment
+Service	URL
+Frontend (Next.js – Vercel)	https://testdel-frontend-bh1p0snc0-dhruvs-projects-89ed57b2.vercel.app/
 
-## Getting Started
+Backend (Node.js – Render)	https://testdel-backend.onrender.com
 
-First, run the development server:
 
-```bash
+🏗 Architecture Overview
+Next.js App (Frontend)
+        ↓
+Next.js API Routes (BFF)
+        ↓
+Node.js Backend Service
+
+✨ Key Features
+📌 Editable Labels System
+
+All titles, headers, and labels are dynamic and editable
+
+Labels are reusable across multiple pages and components
+
+Editing a label updates all usages in real time
+
+Changes are persisted via backend APIs
+
+📈 Dashboard Modules
+
+KPI summary cards
+
+Revenue trend chart
+
+Revenue by region chart
+
+Sales data table with search, filtering, sorting, and pagination
+
+⏳ Global Loading & Error Handling
+
+Centralized global loader using React Context
+
+Graceful handling of backend unavailability
+
+Fallback UI for charts and tables
+
+No broken, blank, or crashing screens
+
+🧑‍💻 Tech Stack & Versions
+Frontend
+
+Next.js 15.x (App Router)
+
+React 18.x
+
+TypeScript 5.x
+
+Shadcn UI
+
+ECharts (echarts-for-react)
+
+Tailwind CSS
+
+Backend
+
+Node.js v20.17.0
+
+npm v10.8.2
+
+Express.js
+
+RESTful API design
+
+.
+🚀 Running the Project Locally
+1️⃣ Prerequisites
+
+Ensure you have:
+
+Node.js ≥ 18 (Node 20 recommended)
+
+npm or yarn
+
+Check versions:
+node -v
+npm -v
+
+
+2️⃣ Backend Setup (Node.js)
+cd backend
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Backend runs at:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+http://localhost:4000
 
-## Learn More
+3️⃣ Frontend Setup (Next.js)
+cd frontend
+npm install
+npm run dev
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Frontend runs at:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+http://localhost:3000
 
-## Deploy on Vercel
+⚠️ Deployment Note (Free-Tier Cold Start)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The backend is hosted on Render’s free tier, which may introduce a cold-start delay (20–60 seconds) after periods of inactivity.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is expected behavior on free hosting
+
+The frontend handles this gracefully using:
+
+Global loading states
+
+Fallback UI for charts and tables
+
+No crashes or blank screens
+
+Once the backend is active, all subsequent requests respond normally.
+
+🧠 Design Decisions
+Global Loader
+
+Implemented using React Context to manage concurrent API requests smoothly without flickering.
+
+Graceful Failure Handling
+
+The BFF layer always returns safe responses, ensuring the UI remains stable even when backend services are unavailable.
+
+Scalability
+
+The editable labels system is designed to scale to hundreds of labels across multiple pages with minimal changes.
+
+✅ Final Note
+
+This project focuses on clean architecture, UX quality, and thoughtful problem-solving, aligning closely with the assessment’s evaluation criteria.

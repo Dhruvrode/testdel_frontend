@@ -45,6 +45,8 @@ export function LabelProvider({ children }: { children: React.ReactNode }) {
     fetchLabels();
   }, []);
 
+  
+
   // Update label (REAL-TIME + persistence)
   async function updateLabel(key: string, value: string) {
     // optimistic update
